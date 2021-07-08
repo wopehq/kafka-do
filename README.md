@@ -40,7 +40,7 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	do "github.com/boratanrikulu/kafka-do"
+	do "github.com/teamseodo/kafka-do"
 )
 
 func main() {
