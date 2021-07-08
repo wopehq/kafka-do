@@ -4,7 +4,7 @@
 	<div align="right">
 		<strong><code>v0.1.0</code></strong>
 	</div>
-	<img height="100px" src="doc/seo.do.png"><br>
+	<img height="100px" src="https://github.com/teamseodo/kafka-do/blob/main/doc/seo.do.png"><br>
 	<strong>kafka-do</strong>
 </div>
 
