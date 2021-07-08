@@ -8,6 +8,8 @@
 	<strong>kafka-do</strong>
 </div>
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/teamseodo/kafka-do.svg)](https://pkg.go.dev/github.com/teamseodo/kafka-do)
+
 ## What
 
 Higher level abstraction for Sarama. 
