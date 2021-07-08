@@ -15,8 +15,12 @@ import (
 //   - producerMessage: *sarama.ProducerMessage, topic's not needed. Set your topic in the messages.
 func ProduceChan(ctx context.Context, client sarama.SyncProducer, inChan chan interface{}, errChan chan error, topic string) {
 	for {
-		message := <-inChan
-		go produceMessage(ctx, client, message, errChan, topic)
+		select {
+		case message := <-inChan:
+			go produceMessage(ctx, client, message, errChan, topic)
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 
