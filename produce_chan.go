@@ -17,7 +17,23 @@ func ProduceChan(ctx context.Context, client sarama.SyncProducer, inChan chan in
 	for {
 		select {
 		case message := <-inChan:
-			go produceMessage(ctx, client, message, errChan, topic)
+			var pMessage *sarama.ProducerMessage
+			switch m := message.(type) {
+			case []byte:
+				pMessage = BytesToProducerMessage(m, topic)
+			case sarama.ConsumerMessage:
+				pMessage = ConsumerMessageToProducerMessage(m, topic)
+			case *sarama.ProducerMessage:
+				pMessage = m
+			default:
+				errChan <- ErrNotAllowed
+				return
+			}
+
+			err := produceMessage(ctx, client, pMessage)
+			if err != nil {
+				errChan <- err
+			}
 		case <-ctx.Done():
 			return
 		}
@@ -25,30 +41,15 @@ func ProduceChan(ctx context.Context, client sarama.SyncProducer, inChan chan in
 }
 
 // produceMessage produces a message. retries 3 times at most.
-// returns produced messages count.
-func produceMessage(ctx context.Context, client sarama.SyncProducer, message interface{}, errChan chan error, topic string) {
-	var producerMessage *sarama.ProducerMessage
-
-	switch m := message.(type) {
-	case []byte:
-		producerMessage = BytesToProducerMessage(m, topic)
-	case sarama.ConsumerMessage:
-		producerMessage = ConsumerMessageToProducerMessage(m, topic)
-	case *sarama.ProducerMessage:
-		producerMessage = m
-	default:
-		errChan <- ErrNotAllowed
-		return
-	}
-
+func produceMessage(ctx context.Context, client sarama.SyncProducer, message *sarama.ProducerMessage) error {
+	var err error
 	for try := 0; try < 3; try++ {
-		_, _, err := client.SendMessage(producerMessage)
+		_, _, err = client.SendMessage(message)
 		if err != nil {
 			time.Sleep(3 * time.Second)
 			continue
 		}
-		return
+		return nil
 	}
-
-	errChan <- ErrCantProduce
+	return err
 }

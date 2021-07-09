@@ -32,10 +32,6 @@ func newChanConsumer() *chanConsumer {
 
 func (c *chanConsumer) consume(ctx context.Context) {
 	err := c.client.Consume(ctx, c.topics, c)
-	if ctx.Err() != nil {
-		log.Printf("context is canceled")
-		return
-	}
 	if err != nil {
 		log.Printf("consume from %s topic error: %s", strings.Join(c.topics, ", "), err.Error())
 	}
