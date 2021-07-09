@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"sync"
 	"testing"
 	"time"
 
@@ -12,20 +13,33 @@ import (
 
 func TestConsumeChan(t *testing.T) {
 	tests := []struct {
-		name     string
-		messages [][]byte
+		name        string
+		messages    [][]byte
+		workerCount int
 	}{
 		{
 			name: "should-got-message",
 			messages: [][]byte{
 				[]byte("message 1"),
 			},
+			workerCount: 1,
 		},
 		{
 			name: "should-got-all-messages",
 			messages: [][]byte{
 				[]byte("message 1"), []byte("message 2"), []byte("message 3"), []byte("message 4"), []byte("message 5"),
 			},
+			workerCount: 1,
+		},
+		{
+			name: "should-with-multiple-worker",
+			messages: [][]byte{
+				[]byte("message 1"), []byte("message 2"), []byte("message 3"), []byte("message 4"), []byte("message 5"),
+				[]byte("message 1"), []byte("message 2"), []byte("message 3"), []byte("message 4"), []byte("message 5"),
+				[]byte("message 1"), []byte("message 2"), []byte("message 3"), []byte("message 4"), []byte("message 5"),
+				[]byte("message 1"), []byte("message 2"), []byte("message 3"), []byte("message 4"), []byte("message 5"),
+			},
+			workerCount: 5,
 		},
 	}
 
@@ -54,7 +68,12 @@ func TestConsumeChan(t *testing.T) {
 			}
 
 			outChan := make(chan sarama.ConsumerMessage, 1)
-			go ConsumeChan(ctx, consumer, []string{topicName}, outChan)
+			defer close(outChan)
+			var wg sync.WaitGroup
+			for i := 0; i < tt.workerCount; i++ {
+				wg.Add(1)
+				go ConsumeChan(ctx, &wg, consumer, []string{topicName}, outChan)
+			}
 
 			var got []sarama.ConsumerMessage
 		out:
@@ -63,12 +82,16 @@ func TestConsumeChan(t *testing.T) {
 				case msg := <-outChan:
 					got = append(got, msg)
 					if len(got) >= len(tt.messages) {
+						cancel()
 						break out
 					}
 				case <-time.After(15 * time.Second): // maximum wait time for the error.
 					break out
 				}
 			}
+
+			cancel()
+			wg.Wait()
 
 			if len(got) != len(tt.messages) {
 				t.Errorf("ConsumeChan() = got len %d, want len %d", len(got), len(tt.messages))

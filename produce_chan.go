@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/Shopify/sarama"
@@ -13,7 +14,8 @@ import (
 //   - bytesSlice: []byte, topic must be set
 //   - consumerMessage: sarama.ConsumerMessage, topic must be set
 //   - producerMessage: *sarama.ProducerMessage, topic's not needed. Set your topic in the messages.
-func ProduceChan(ctx context.Context, client sarama.SyncProducer, inChan chan interface{}, errChan chan error, topic string) {
+func ProduceChan(ctx context.Context, wg *sync.WaitGroup, client sarama.SyncProducer, inChan chan interface{}, errChan chan error, topic string) {
+	defer wg.Done()
 	for {
 		select {
 		case message := <-inChan:
@@ -27,7 +29,7 @@ func ProduceChan(ctx context.Context, client sarama.SyncProducer, inChan chan in
 				pMessage = m
 			default:
 				errChan <- ErrNotAllowed
-				return
+				continue
 			}
 
 			err := produceMessage(ctx, client, pMessage)

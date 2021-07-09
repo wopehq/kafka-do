@@ -2,20 +2,23 @@ package kafka
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 )
 
 func TestProduceChan(t *testing.T) {
 	tests := []struct {
-		name     string
-		wantErr  bool
-		messages []interface{}
+		name        string
+		wantErr     bool
+		messages    []interface{}
+		workerCount int
 	}{
 		{
-			name:     "should-not-work-with-unsupported-type",
-			wantErr:  true,
-			messages: intSliceAsInterfaceSlice([]int{1, 2, 3}),
+			name:        "should-not-work-with-unsupported-type",
+			wantErr:     true,
+			messages:    intSliceAsInterfaceSlice([]int{1, 2, 3}),
+			workerCount: 1,
 		},
 		{
 			name:    "should-work-with-bytes",
@@ -23,6 +26,7 @@ func TestProduceChan(t *testing.T) {
 			messages: bytesSliceAsInterfaceSlice([][]byte{
 				[]byte("message 1"), []byte("message 2"), []byte("message 3"),
 			}),
+			workerCount: 1,
 		},
 		{
 			name:    "should-work-with-consumer-message",
@@ -37,6 +41,15 @@ func TestProduceChan(t *testing.T) {
 			messages: producerMessagesAsInterfaceSlice([][]byte{
 				[]byte("message 1"), []byte("message 2"), []byte("message 3"),
 			}),
+			workerCount: 1,
+		},
+		{
+			name:    "should-work-with-multiple-worker",
+			wantErr: false,
+			messages: producerMessagesAsInterfaceSlice([][]byte{
+				[]byte("message 1"), []byte("message 2"), []byte("message 3"),
+			}),
+			workerCount: 3,
 		},
 	}
 
@@ -48,10 +61,17 @@ func TestProduceChan(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			inChan := make(chan interface{}, 10)
 			errChan := make(chan error, 10)
+			defer close(inChan)
+			defer close(errChan)
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			go ProduceChan(ctx, client, inChan, errChan, "responses")
+
+			var wg sync.WaitGroup
+			for i := 0; i < tt.workerCount; i++ {
+				wg.Add(1)
+				go ProduceChan(ctx, &wg, client, inChan, errChan, "responses")
+			}
 			for _, m := range tt.messages {
 				inChan <- m
 			}
@@ -63,6 +83,9 @@ func TestProduceChan(t *testing.T) {
 				}
 			case <-time.After(5 * time.Second): // maximum wait time for the error.
 			}
+
+			cancel()
+			wg.Wait()
 		})
 	}
 }

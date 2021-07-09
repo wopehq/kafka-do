@@ -39,6 +39,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/Shopify/sarama"
@@ -46,7 +47,7 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
 	topicName := "kafka-do-testing"
 
 	producer, err := do.NewProducer([]string{"127.0.0.1:9094"}, 5)
@@ -63,15 +64,24 @@ func main() {
 
 	messages := [][]byte{ // for testing.
 		[]byte("message 1"), []byte("message 2"), []byte("message 3"),
+		[]byte("message 1"), []byte("message 2"), []byte("message 3"),
+		[]byte("message 1"), []byte("message 2"), []byte("message 3"),
+		[]byte("message 1"), []byte("message 2"), []byte("message 3"),
 	}
 
-	err = ProduceBatch(ctx, producer, messages, topicName) // produce messages as a batch.
+	err = do.ProduceBatch(ctx, producer, messages, topicName) // produce messages as a batch.
 	if err != nil {
 		log.Fatalf("error while writin to Kafka, error: %s", err)
 	}
 
 	outChan := make(chan sarama.ConsumerMessage, 1)
-	go do.ConsumeChan(ctx, consumer, []string{topicName}, outChan) // consume messages as a chan.
+	defer close(outChan)
+
+	var wg sync.WaitGroup
+	for i := 0; i < 3; i++ {
+		wg.Add(1)
+		go do.ConsumeChan(ctx, &wg, consumer, []string{topicName}, outChan) // consume messages as a chan.
+	}
 
 out:
 	for {
@@ -82,6 +92,9 @@ out:
 			break out
 		}
 	}
+
+	cancel()
+	wg.Wait()
 }
 ```
 
