@@ -32,7 +32,7 @@ func TestConsumeChan(t *testing.T) {
 			workerCount: 1,
 		},
 		{
-			name: "should-with-multiple-worker",
+			name: "should-work-with-multiple-worker",
 			messages: [][]byte{
 				[]byte("message 1"), []byte("message 2"), []byte("message 3"), []byte("message 4"), []byte("message 5"),
 				[]byte("message 1"), []byte("message 2"), []byte("message 3"), []byte("message 4"), []byte("message 5"),

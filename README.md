@@ -4,7 +4,7 @@
 	<div align="right">
 		<strong><code>v0.1.3</code></strong>
 	</div>
-	<img height="100px" src="https://github.com/teamseodo/kafka-do/blob/main/doc/seo.do.png"><br>
+	<img height="100px" src="doc/seo.do.png"><br>
 	<strong>kafka-do</strong>
 </div>
 
@@ -32,6 +32,8 @@ Read from a channel and produce them to a topic.
 
 ## Example
 
+For e2e example, check [**here**](https://github.com/teamseodo/kafka-do-example).
+
 ```go
 package kafka
 
@@ -43,20 +45,20 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	do "github.com/teamseodo/kafka-do"
+	kafka "github.com/teamseodo/kafka-do"
 )
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	topicName := "kafka-do-testing"
 
-	producer, err := do.NewProducer([]string{"127.0.0.1:9094"}, 5)
+	producer, err := kafka.NewProducer([]string{"127.0.0.1:9094"}, 5)
 	if err != nil {
 		log.Fatalf("error while creating consumer group, error: %s", err)
 	}
 	defer producer.Close()
 
-	consumer, err := do.NewConsumerGroup([]string{"127.0.0.1:9094"}, topicName)
+	consumer, err := kafka.NewConsumerGroup([]string{"127.0.0.1:9094"}, topicName)
 	if err != nil {
 		log.Fatalf("error while creating consumer group, error: %s", err)
 	}
@@ -69,7 +71,7 @@ func main() {
 		[]byte("message 1"), []byte("message 2"), []byte("message 3"),
 	}
 
-	err = do.ProduceBatch(ctx, producer, messages, topicName) // produce messages as a batch.
+	err = kafka.ProduceBatch(ctx, producer, messages, topicName) // produce messages as a batch.
 	if err != nil {
 		log.Fatalf("error while writin to Kafka, error: %s", err)
 	}
@@ -80,7 +82,7 @@ func main() {
 	var wg sync.WaitGroup
 	for i := 0; i < 3; i++ {
 		wg.Add(1)
-		go do.ConsumeChan(ctx, &wg, consumer, []string{topicName}, outChan) // consume messages as a chan.
+		go kafka.ConsumeChan(ctx, &wg, consumer, []string{topicName}, outChan) // consume messages as a chan.
 	}
 
 out:
