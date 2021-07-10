@@ -102,8 +102,7 @@ out:
 
 ## TODOs
 
-- [ ] Add an e2e example repo.
-- [ ] Add priority usage support to consuming.
+- [ ] Add priority support to consuming.
 
 ## Development
 
