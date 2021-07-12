@@ -22,9 +22,9 @@ func ProduceChan(ctx context.Context, wg *sync.WaitGroup, client sarama.SyncProd
 			var pMessage *sarama.ProducerMessage
 			switch m := message.(type) {
 			case []byte:
-				pMessage = BytesToProducerMessage(m, topic)
+				pMessage = bytesToProducerMessage(m, topic)
 			case sarama.ConsumerMessage:
-				pMessage = ConsumerMessageToProducerMessage(m, topic)
+				pMessage = consumerMessageToProducerMessage(m, topic)
 			case *sarama.ProducerMessage:
 				pMessage = m
 			default:

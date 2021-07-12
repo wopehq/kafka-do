@@ -2,65 +2,54 @@ package kafka
 
 import "github.com/Shopify/sarama"
 
-// BytesSliceToProducerMessages converts given bytes to producer messages.
-func BytesSliceToProducerMessages(inputs [][]byte, topic string) []*sarama.ProducerMessage {
+// bytesSliceToProducerMessages converts given bytes to producer messages.
+func bytesSliceToProducerMessages(inputs [][]byte, topic string) []*sarama.ProducerMessage {
 	var ms []*sarama.ProducerMessage
 
 	for _, i := range inputs {
-		ms = append(ms, BytesToProducerMessage(i, topic))
+		ms = append(ms, bytesToProducerMessage(i, topic))
 	}
 
 	return ms
 }
 
-// BytesSliceToConsumerMessages converts given bytes to consumer messages.
-func BytesSliceToConsumerMessages(inputs [][]byte) []sarama.ConsumerMessage {
+// bytesSliceToConsumerMessages converts given bytes to consumer messages.
+func bytesSliceToConsumerMessages(inputs [][]byte) []sarama.ConsumerMessage {
 	var ms []sarama.ConsumerMessage
 
 	for _, i := range inputs {
-		ms = append(ms, BytesToConsumerMessage(i))
+		ms = append(ms, bytesToConsumerMessage(i))
 	}
 
 	return ms
 }
 
-// BytesToProducerMessage converts given bytes to producer message.
-func BytesToProducerMessage(i []byte, topic string) *sarama.ProducerMessage {
+// bytesToProducerMessage converts given bytes to producer message.
+func bytesToProducerMessage(i []byte, topic string) *sarama.ProducerMessage {
 	return &sarama.ProducerMessage{
 		Topic: topic,
 		Value: sarama.ByteEncoder(i),
 	}
 }
 
-// BytesToConsumerMessage converts given bytes to consumer message.
-func BytesToConsumerMessage(i []byte) sarama.ConsumerMessage {
+// bytesToConsumerMessage converts given bytes to consumer message.
+func bytesToConsumerMessage(i []byte) sarama.ConsumerMessage {
 	return sarama.ConsumerMessage{
 		Value: i,
 	}
 }
 
-// ConsumerMessagesToBytesSlice converts given messages to bytes.
-func ConsumerMessagesToBytesSlice(messages []sarama.ConsumerMessage) [][]byte {
-	var r [][]byte
-
-	for _, m := range messages {
-		r = append(r, m.Value)
-	}
-
-	return r
-}
-
-func ConsumerMessagesToProducerMessages(messages []sarama.ConsumerMessage, topic string) []*sarama.ProducerMessage {
+func consumerMessagesToProducerMessages(messages []sarama.ConsumerMessage, topic string) []*sarama.ProducerMessage {
 	var ms []*sarama.ProducerMessage
 
 	for _, m := range messages {
-		ms = append(ms, ConsumerMessageToProducerMessage(m, topic))
+		ms = append(ms, consumerMessageToProducerMessage(m, topic))
 	}
 
 	return ms
 }
 
-func ConsumerMessageToProducerMessage(m sarama.ConsumerMessage, topic string) *sarama.ProducerMessage {
+func consumerMessageToProducerMessage(m sarama.ConsumerMessage, topic string) *sarama.ProducerMessage {
 	return &sarama.ProducerMessage{
 		Topic: topic,
 		Value: sarama.ByteEncoder(m.Value),

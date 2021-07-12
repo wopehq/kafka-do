@@ -28,14 +28,14 @@ func TestProduceBatch(t *testing.T) {
 		{
 			name:    "should-work-with-consumer-messages",
 			wantErr: false,
-			messages: BytesSliceToConsumerMessages([][]byte{
+			messages: bytesSliceToConsumerMessages([][]byte{
 				[]byte("message 1"), []byte("message 2"), []byte("message 3"),
 			}),
 		},
 		{
 			name:    "should-work-with-producer-messages",
 			wantErr: false,
-			messages: BytesSliceToProducerMessages([][]byte{
+			messages: bytesSliceToProducerMessages([][]byte{
 				[]byte("message 1"), []byte("message 2"), []byte("message 3"),
 			}, "responses"),
 		},
@@ -63,13 +63,13 @@ func Test_produceMessages(t *testing.T) {
 	}{
 		{
 			name: "returned-count-should-equal-to-sent-message-count",
-			messages: BytesSliceToProducerMessages([][]byte{
+			messages: bytesSliceToProducerMessages([][]byte{
 				[]byte("message 1"), []byte("message 2"), []byte("message 3"),
 			}, "responses"),
 		},
 		{
 			name: "returned-count-should-equal-to-sent-message-count",
-			messages: BytesSliceToProducerMessages([][]byte{
+			messages: bytesSliceToProducerMessages([][]byte{
 				[]byte("message 1"),
 			}, "responses"),
 		},

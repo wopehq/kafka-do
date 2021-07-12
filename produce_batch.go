@@ -21,14 +21,14 @@ var ErrCantProduce = errors.New("cant produce the message")
 func ProduceBatch(ctx context.Context, client sarama.SyncProducer, messages interface{}, topic string) error {
 	switch m := messages.(type) {
 	case [][]byte:
-		s, err := produceMessages(ctx, client, BytesSliceToProducerMessages(m, topic))
+		s, err := produceMessages(ctx, client, bytesSliceToProducerMessages(m, topic))
 		if err != nil {
 			return err
 		}
 		log.Printf("produced %d messages to %s", s, topic)
 		return nil
 	case []sarama.ConsumerMessage:
-		s, err := produceMessages(ctx, client, ConsumerMessagesToProducerMessages(m, topic))
+		s, err := produceMessages(ctx, client, consumerMessagesToProducerMessages(m, topic))
 		if err != nil {
 			return err
 		}
