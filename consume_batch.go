@@ -57,7 +57,6 @@ func (c *batchConsumer) consume(ctx context.Context) {
 	for {
 		err := c.client.Consume(ctx, c.topics, c)
 		if ctx.Err() != nil {
-			log.Printf("context is canceled")
 			c.done <- true
 			return
 		}
@@ -71,7 +70,6 @@ func (c *batchConsumer) consume(ctx context.Context) {
 		}
 		select {
 		case <-ctx.Done():
-			log.Printf("context is canceled")
 			c.done <- true
 			return
 		case <-time.After(5 * time.Second):
