@@ -21,6 +21,9 @@ We want to be able to write our kafka applications without making the same thing
 **Batch Consume**  
 Consume messages as much as you defined.
 
+**Batch Consume Priorty**  
+Consume messages as much as you defined by using priority structure.
+
 **Chan Consume**  
 Consume messages and streams them to a channel.
 
@@ -99,10 +102,6 @@ out:
 	wg.Wait()
 }
 ```
-
-## TODOs
-
-- [ ] Add priority support to consuming.
 
 ## Development
 
