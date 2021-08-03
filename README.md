@@ -2,7 +2,7 @@
 
 <div align="center">
 	<div align="right">
-		<strong><code>v0.1.5</code></strong>
+		<strong><code>v0.1.6</code></strong>
 	</div>
 	<img height="100px" src="doc/seo.do.png"><br>
 	<strong>kafka-do</strong>
