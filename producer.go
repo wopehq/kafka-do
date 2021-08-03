@@ -25,7 +25,7 @@ func NewProducer(brokers []string, maxMegabytes int) (sarama.SyncProducer, error
 	config.Producer.Idempotent = true
 	config.Producer.Compression = sarama.CompressionGZIP
 	config.Producer.MaxMessageBytes = maxMegabytes * 1000000
-	config.Producer.Retry.Max = 3
+	config.Producer.Retry.Max = 1024
 	config.Net.MaxOpenRequests = 1
 
 	return sarama.NewSyncProducer(brokers, config)
