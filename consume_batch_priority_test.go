@@ -65,7 +65,7 @@ func TestConsumeBatchPriority(t *testing.T) {
 			defer cancel()
 
 			topicName := fmt.Sprintf("%s-%d", tt.topicToProduce, r)
-			err := ProduceBatch(ctx, producer, randomMessages(tt.messageCount), topicName)
+			_, err := ProduceBatch(ctx, producer, randomMessages(tt.messageCount), topicName)
 			if err != nil {
 				t.Fatalf("error while producing batch to %s", tt.topicToProduce)
 			}
