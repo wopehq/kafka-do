@@ -14,6 +14,10 @@ import (
 // Re-tries every 5 seconds until the success. Returns as sarama.ConsumerMessage slice.
 // Runs 1 minutes at most. (if there is no message, time will may be exceed.)
 func ConsumeBatch(ctx context.Context, client sarama.ConsumerGroup, topics []string, batchCount int) []sarama.ConsumerMessage {
+	if batchCount == 0 {
+		return nil
+	}
+
 	consumer := newBatchConsumer()
 	defer close(consumer.done)
 	consumer.batchCount = batchCount

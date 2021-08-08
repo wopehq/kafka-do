@@ -14,6 +14,10 @@ import (
 // Returns the messages when as much as batchCount is arrived or time exceed,
 // (if there is no message on any priority stage, time will may be exceed.)
 func ConsumeBatchPriority(ctx context.Context, client sarama.ConsumerGroup, topics []string, batchCount int) ([]sarama.ConsumerMessage, string) {
+	if batchCount == 0 {
+		return nil, ""
+	}
+
 	consumer := newBatchConsumer()
 	defer close(consumer.done)
 	consumer.batchCount = batchCount
