@@ -56,17 +56,17 @@ func consumerMessageToProducerMessage(m sarama.ConsumerMessage, topic string) *s
 	}
 }
 
-func producerErrorsToProducerMessages(messages sarama.ProducerErrors, topic string) []*sarama.ProducerMessage {
+func producerErrorsToProducerMessages(messages sarama.ProducerErrors) []*sarama.ProducerMessage {
 	var ms []*sarama.ProducerMessage
 
 	for _, m := range messages {
-		ms = append(ms, producerErrorToProducerMessage(m, topic))
+		ms = append(ms, producerErrorToProducerMessage(m))
 	}
 
 	return ms
 }
 
-func producerErrorToProducerMessage(m *sarama.ProducerError, topic string) *sarama.ProducerMessage {
+func producerErrorToProducerMessage(m *sarama.ProducerError) *sarama.ProducerMessage {
 	return m.Msg
 }
 

@@ -31,7 +31,7 @@ func ProduceBatch(ctx context.Context, client sarama.SyncProducer, messages inte
 	case []*sarama.ProducerMessage:
 		return produceMessages(ctx, client, m)
 	case sarama.ProducerErrors:
-		return produceMessages(ctx, client, producerErrorsToProducerMessages(m, topic))
+		return produceMessages(ctx, client, producerErrorsToProducerMessages(m))
 	default:
 		return sarama.ProducerErrors{&ErrNotAllowedTypeProducerError}
 	}
