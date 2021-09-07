@@ -56,6 +56,20 @@ func consumerMessageToProducerMessage(m sarama.ConsumerMessage, topic string) *s
 	}
 }
 
+func producerErrorsToProducerMessages(messages sarama.ProducerErrors) []*sarama.ProducerMessage {
+	var ms []*sarama.ProducerMessage
+
+	for _, m := range messages {
+		ms = append(ms, producerErrorToProducerMessage(m))
+	}
+
+	return ms
+}
+
+func producerErrorToProducerMessage(m *sarama.ProducerError) *sarama.ProducerMessage {
+	return m.Msg
+}
+
 func intSliceAsInterfaceSlice(values []int) []interface{} {
 	iValues := make([]interface{}, len(values))
 	for i, v := range values {
