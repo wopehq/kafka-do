@@ -62,7 +62,7 @@ func TestConsumeChan(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			err := ProduceBatch(ctx, producer, tt.messages, topicName)
+			_, err := ProduceBatch(ctx, producer, tt.messages, topicName)
 			if err != nil {
 				t.Errorf("error while writin to Kafka, error: %s", err)
 			}

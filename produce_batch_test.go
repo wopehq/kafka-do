@@ -49,7 +49,7 @@ func TestProduceBatch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			if err := ProduceBatch(ctx, client, tt.messages, "responses"); (err != nil) != tt.wantErr {
+			if _, err := ProduceBatch(ctx, client, tt.messages, "responses"); (err != nil) != tt.wantErr {
 				t.Errorf("ProduceBatch() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/Shopify/sarama"
 )
@@ -18,31 +17,16 @@ var ErrCantProduce = errors.New("cant produce the message")
 //   - bytesSlice: [][]byte, topic must be set
 //   - consumerMessages: []sarama.ConsumerMessage, topic must be set
 //   - producerMessages: []*sarama.ProducerMessage, topic's not needed. Set your topic in the messages.
-func ProduceBatch(ctx context.Context, client sarama.SyncProducer, messages interface{}, topic string) error {
+func ProduceBatch(ctx context.Context, client sarama.SyncProducer, messages interface{}, topic string) (int, error) {
 	switch m := messages.(type) {
 	case [][]byte:
-		s, err := produceMessages(ctx, client, bytesSliceToProducerMessages(m, topic))
-		if err != nil {
-			return err
-		}
-		log.Printf("produced %d messages to %s", s, topic)
-		return nil
+		return produceMessages(ctx, client, bytesSliceToProducerMessages(m, topic))
 	case []sarama.ConsumerMessage:
-		s, err := produceMessages(ctx, client, consumerMessagesToProducerMessages(m, topic))
-		if err != nil {
-			return err
-		}
-		log.Printf("produced %d messages to %s", s, topic)
-		return nil
+		return produceMessages(ctx, client, consumerMessagesToProducerMessages(m, topic))
 	case []*sarama.ProducerMessage:
-		s, err := produceMessages(ctx, client, m)
-		if err != nil {
-			return err
-		}
-		log.Printf("produced %d messages", s)
-		return nil
+		return produceMessages(ctx, client, m)
 	default:
-		return ErrNotAllowedType
+		return 0, ErrNotAllowedType
 	}
 }
 
@@ -55,14 +39,15 @@ func produceMessages(ctx context.Context, client sarama.SyncProducer, messages [
 	for try := 0; try < 3; try++ {
 		err = client.SendMessages(messages)
 		messages = []*sarama.ProducerMessage{} // clear given messages.
-		if err != nil {
-			producerErrors := err.(sarama.ProducerErrors)
-			for _, pErr := range producerErrors {
-				messages = append(messages, pErr.Msg)
-			}
-			continue
+
+		if err == nil {
+			break
 		}
-		break
+
+		producerErrors := err.(sarama.ProducerErrors)
+		for _, pErr := range producerErrors {
+			messages = append(messages, pErr.Msg)
+		}
 	}
 
 	if err != nil { // overwrite error message to show total unproduced messages count.
