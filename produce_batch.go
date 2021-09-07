@@ -39,14 +39,15 @@ func produceMessages(ctx context.Context, client sarama.SyncProducer, messages [
 	for try := 0; try < 3; try++ {
 		err = client.SendMessages(messages)
 		messages = []*sarama.ProducerMessage{} // clear given messages.
-		if err != nil {
-			producerErrors := err.(sarama.ProducerErrors)
-			for _, pErr := range producerErrors {
-				messages = append(messages, pErr.Msg)
-			}
-			continue
+
+		if err == nil {
+			break
 		}
-		break
+
+		producerErrors := err.(sarama.ProducerErrors)
+		for _, pErr := range producerErrors {
+			messages = append(messages, pErr.Msg)
+		}
 	}
 
 	if err != nil { // overwrite error message to show total unproduced messages count.
