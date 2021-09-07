@@ -21,6 +21,7 @@ var ErrCantProduce = errors.New("cant produce the message")
 //   - bytesSlice: [][]byte, topic must be set
 //   - consumerMessages: []sarama.ConsumerMessage, topic must be set
 //   - producerMessages: []*sarama.ProducerMessage, topic's not needed. Set your topic in the messages.
+//   - producerErrors: sarama.ProducerErrors, topic isn't needed. we expect topic to be already set in producerError.Msg
 func ProduceBatch(ctx context.Context, client sarama.SyncProducer, messages interface{}, topic string) sarama.ProducerErrors {
 	switch m := messages.(type) {
 	case [][]byte:
@@ -29,6 +30,8 @@ func ProduceBatch(ctx context.Context, client sarama.SyncProducer, messages inte
 		return produceMessages(ctx, client, consumerMessagesToProducerMessages(m, topic))
 	case []*sarama.ProducerMessage:
 		return produceMessages(ctx, client, m)
+	case sarama.ProducerErrors:
+		return produceMessages(ctx, client, producerErrorsToProducerMessages(m, topic))
 	default:
 		return sarama.ProducerErrors{&ErrNotAllowedTypeProducerError}
 	}
