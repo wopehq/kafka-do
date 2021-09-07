@@ -92,7 +92,7 @@ func Test_produceMessages(t *testing.T) {
 				t.Errorf("produceMessages() first error = %v", errs[0].Err)
 				return
 			}
-			if want := 0; len(errs) != 0 {
+			if want := 0; len(errs) != want {
 				t.Errorf("produceMessages() = %v, want %v", len(errs), want)
 			}
 		})
