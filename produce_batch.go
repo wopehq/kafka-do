@@ -9,6 +9,10 @@ import (
 )
 
 var ErrNotAllowedType = errors.New("not allowed type")
+var ErrNotAllowedTypeProducerError = sarama.ProducerError{
+	Msg: nil,
+	Err: ErrNotAllowedType,
+}
 var ErrCantProduce = errors.New("cant produce the message")
 
 // ProduceBatch produces given data with the client.
@@ -17,7 +21,7 @@ var ErrCantProduce = errors.New("cant produce the message")
 //   - bytesSlice: [][]byte, topic must be set
 //   - consumerMessages: []sarama.ConsumerMessage, topic must be set
 //   - producerMessages: []*sarama.ProducerMessage, topic's not needed. Set your topic in the messages.
-func ProduceBatch(ctx context.Context, client sarama.SyncProducer, messages interface{}, topic string) (int, error) {
+func ProduceBatch(ctx context.Context, client sarama.SyncProducer, messages interface{}, topic string) (failedMessages []*sarama.ProducerMessage, errors sarama.ProducerErrors) {
 	switch m := messages.(type) {
 	case [][]byte:
 		return produceMessages(ctx, client, bytesSliceToProducerMessages(m, topic))
@@ -26,15 +30,13 @@ func ProduceBatch(ctx context.Context, client sarama.SyncProducer, messages inte
 	case []*sarama.ProducerMessage:
 		return produceMessages(ctx, client, m)
 	default:
-		return 0, ErrNotAllowedType
+		return []*sarama.ProducerMessage{}, sarama.ProducerErrors{&ErrNotAllowedTypeProducerError}
 	}
 }
 
 // produceMessages produces messages. retries 3 times at most.
 // returns produced messages count.
-func produceMessages(ctx context.Context, client sarama.SyncProducer, messages []*sarama.ProducerMessage) (int, error) {
-	wantProduceCount := len(messages)
-
+func produceMessages(ctx context.Context, client sarama.SyncProducer, messages []*sarama.ProducerMessage) (failedMessages []*sarama.ProducerMessage, errors sarama.ProducerErrors) {
 	var err error
 	for try := 0; try < 3; try++ {
 		err = client.SendMessages(messages)
@@ -44,8 +46,8 @@ func produceMessages(ctx context.Context, client sarama.SyncProducer, messages [
 			break
 		}
 
-		producerErrors := err.(sarama.ProducerErrors)
-		for _, pErr := range producerErrors {
+		errors = err.(sarama.ProducerErrors)
+		for _, pErr := range errors {
 			messages = append(messages, pErr.Msg)
 		}
 	}
@@ -54,5 +56,5 @@ func produceMessages(ctx context.Context, client sarama.SyncProducer, messages [
 		err = fmt.Errorf("failed to deliver %d messages, last error: %w", len(messages), err)
 	}
 
-	return wantProduceCount - len(messages), err
+	return messages, errors
 }
