@@ -9,10 +9,6 @@ import (
 )
 
 var ErrNotAllowedType = errors.New("not allowed type")
-var ErrNotAllowedTypeProducerError = sarama.ProducerError{
-	Msg: nil,
-	Err: ErrNotAllowedType,
-}
 var ErrCantProduce = errors.New("cant produce the message")
 
 // ProduceBatch produces given data with the client.
@@ -22,7 +18,7 @@ var ErrCantProduce = errors.New("cant produce the message")
 //   - consumerMessages: []sarama.ConsumerMessage, topic must be set
 //   - producerMessages: []*sarama.ProducerMessage, topic's not needed. Set your topic in the messages.
 //   - producerErrors: sarama.ProducerErrors, topic isn't needed. we expect topic to be already set in producerError.Msg
-func ProduceBatch(ctx context.Context, client sarama.SyncProducer, messages interface{}, topic string) sarama.ProducerErrors {
+func ProduceBatch(ctx context.Context, client sarama.SyncProducer, messages interface{}, topic string) (sarama.ProducerErrors, error) {
 	switch m := messages.(type) {
 	case [][]byte:
 		return produceMessages(ctx, client, bytesSliceToProducerMessages(m, topic))
@@ -33,13 +29,13 @@ func ProduceBatch(ctx context.Context, client sarama.SyncProducer, messages inte
 	case sarama.ProducerErrors:
 		return produceMessages(ctx, client, producerErrorsToProducerMessages(m))
 	default:
-		return sarama.ProducerErrors{&ErrNotAllowedTypeProducerError}
+		return nil, ErrNotAllowedType
 	}
 }
 
 // produceMessages produces messages. retries 3 times at most.
 // returns produced messages count.
-func produceMessages(ctx context.Context, client sarama.SyncProducer, messages []*sarama.ProducerMessage) sarama.ProducerErrors {
+func produceMessages(ctx context.Context, client sarama.SyncProducer, messages []*sarama.ProducerMessage) (sarama.ProducerErrors, error) {
 	var err error
 	var errs sarama.ProducerErrors
 	for try := 0; try < 3; try++ {
@@ -60,5 +56,5 @@ func produceMessages(ctx context.Context, client sarama.SyncProducer, messages [
 		err = fmt.Errorf("failed to deliver %d messages, last error: %w", len(messages), err)
 	}
 
-	return errs
+	return errs, err
 }

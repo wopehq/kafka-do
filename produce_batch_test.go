@@ -49,7 +49,7 @@ func TestProduceBatch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			if errs := ProduceBatch(ctx, client, tt.messages, "responses"); (len(errs) > 0) != tt.wantErr {
+			if _, err := ProduceBatch(ctx, client, tt.messages, "responses"); err != nil && !tt.wantErr {
 				t.Errorf("ProduceBatch() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -87,13 +87,13 @@ func Test_produceMessages(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			errs := produceMessages(ctx, client, tt.messages)
-			if len(errs) > 0 {
-				t.Errorf("produceMessages() first error = %v", errs[0].Err)
+			failed, err := produceMessages(ctx, client, tt.messages)
+			if err != nil {
+				t.Errorf("produceMessages() first error = %v", err)
 				return
 			}
-			if want := 0; len(errs) != want {
-				t.Errorf("produceMessages() = %v, want %v", len(errs), want)
+			if want := 0; len(failed) != want {
+				t.Errorf("produceMessages() = %v, want %v", len(failed), want)
 			}
 		})
 	}
