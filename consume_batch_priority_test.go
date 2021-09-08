@@ -65,9 +65,9 @@ func TestConsumeBatchPriority(t *testing.T) {
 			defer cancel()
 
 			topicName := fmt.Sprintf("%s-%d", tt.topicToProduce, r)
-			errs := ProduceBatch(ctx, producer, randomMessages(tt.messageCount), topicName)
-			if len(errs) > 0 {
-				t.Fatalf("error while producing batch to %s, first error: %s", tt.topicToProduce, errs[0].Err.Error())
+			_, err := ProduceBatch(ctx, producer, randomMessages(tt.messageCount), topicName)
+			if err != nil {
+				t.Fatalf("error while producing batch to %s, first error: %s", tt.topicToProduce, err)
 			}
 
 			messages, fromTopic := ConsumeBatchPriority(ctx, consumer, addValueToStrings(tt.topics, r), tt.batchCount)
