@@ -13,7 +13,7 @@ func TestNewProducer(t *testing.T) {
 	}{
 		{
 			name:         "should-not-work-without-brokers",
-			brokers:      nil,
+			brokers:      []string{},
 			maxMegabytes: 1,
 			wantErr:      true,
 		},

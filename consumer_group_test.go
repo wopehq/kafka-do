@@ -33,7 +33,7 @@ func TestNewConsumerGroup(t *testing.T) {
 		{
 			name: "should-not-work-without-brokers",
 			args: args{
-				brokers: nil,
+				brokers: []string{},
 				groupId: "kafka-do",
 			},
 			wantErr: true,
