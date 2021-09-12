@@ -14,33 +14,33 @@ func TestConsumeBatchPriority(t *testing.T) {
 		messageCount   int
 		topicToProduce string
 		topics         []string
-		batchCount     int
+		batchSize      int
 	}{
 		{
 			name:           "should-got-all-messages-from-high",
 			messageCount:   3000,
-			batchCount:     3000,
+			batchSize:      3000,
 			topicToProduce: "high",
 			topics:         []string{"high", "med", "low"},
 		},
 		{
 			name:           "should-got-all-messages-from-med",
 			messageCount:   3000,
-			batchCount:     3000,
+			batchSize:      3000,
 			topicToProduce: "med",
 			topics:         []string{"high", "med", "low"},
 		},
 		{
 			name:           "should-got-all-messages-from-low",
 			messageCount:   3000,
-			batchCount:     3000,
+			batchSize:      3000,
 			topicToProduce: "low",
 			topics:         []string{"high", "med", "low"},
 		},
 		{
 			name:           "should-got-all-messages-from-high-lower-then-batch-count",
 			messageCount:   1000,
-			batchCount:     3000,
+			batchSize:      3000,
 			topicToProduce: "high",
 			topics:         []string{"high", "med", "low"},
 		},
@@ -70,7 +70,7 @@ func TestConsumeBatchPriority(t *testing.T) {
 				t.Fatalf("error while producing batch to %s, first error: %s", tt.topicToProduce, err)
 			}
 
-			messages, fromTopic := ConsumeBatchPriority(ctx, consumer, addValueToStrings(tt.topics, r), tt.batchCount)
+			messages, fromTopic := ConsumeBatchPriority(ctx, consumer, addValueToStrings(tt.topics, r), tt.batchSize)
 			if fromTopic != topicName {
 				t.Errorf("ConsumeBatchPriority() = got fromTopic %s, want fromTopic %s", topicName, fromTopic)
 			}

@@ -10,17 +10,17 @@ import (
 	"github.com/Shopify/sarama"
 )
 
-// ConsumeBatch takes messages as much as batchCount by using given sarama.ConsumerGroup.
+// ConsumeBatch takes messages as much as batchSize by using given sarama.ConsumerGroup.
 // Re-tries every 5 seconds until the success. Returns as sarama.ConsumerMessage slice.
 // Runs 1 minutes at most. (if there is no message, time will may be exceed.)
-func ConsumeBatch(ctx context.Context, client sarama.ConsumerGroup, topics []string, batchCount int) []sarama.ConsumerMessage {
-	if batchCount == 0 {
+func ConsumeBatch(ctx context.Context, client sarama.ConsumerGroup, topics []string, batchSize int) []sarama.ConsumerMessage {
+	if batchSize == 0 {
 		return nil
 	}
 
 	consumer := newBatchConsumer()
 	defer close(consumer.done)
-	consumer.batchCount = batchCount
+	consumer.batchSize = batchSize
 	consumer.topics = topics
 	consumer.client = client
 
@@ -43,12 +43,12 @@ func ConsumeBatch(ctx context.Context, client sarama.ConsumerGroup, topics []str
 }
 
 type batchConsumer struct {
-	batchCount int
-	done       chan bool
-	topics     []string
-	rwlock     sync.RWMutex
-	client     sarama.ConsumerGroup
-	messages   []sarama.ConsumerMessage
+	batchSize int
+	done      chan bool
+	topics    []string
+	rwlock    sync.RWMutex
+	client    sarama.ConsumerGroup
+	messages  []sarama.ConsumerMessage
 }
 
 func newBatchConsumer() *batchConsumer {
@@ -65,7 +65,7 @@ func (c *batchConsumer) consume(ctx context.Context) {
 			return
 		}
 
-		if c.batchCount <= len(c.messages) {
+		if c.batchSize <= len(c.messages) {
 			c.done <- true
 			return
 		}
@@ -98,7 +98,7 @@ func (c *batchConsumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim 
 		c.rwlock.Lock()
 		c.messages = append(c.messages, *message)
 		session.MarkMessage(message, "")
-		if c.batchCount <= len(c.messages) {
+		if c.batchSize <= len(c.messages) {
 			c.rwlock.Unlock()
 			break
 		}
