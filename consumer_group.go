@@ -14,7 +14,7 @@ func NewConsumerGroup(brokers []string, groupId string) (sarama.ConsumerGroup, e
 	if groupId == "" {
 		return nil, ErrNoGroupID
 	}
-	if brokers == nil {
+	if len(brokers) == 0 {
 		return nil, ErrNoBrokers
 	}
 
