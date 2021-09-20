@@ -1,32 +1,38 @@
 package kafka
 
 import (
-	"errors"
+	"context"
 	"fmt"
 
-	"github.com/Shopify/sarama"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-var ErrNotAllowed = errors.New("input is not allowed")
+type Producer struct {
+	client *kgo.Client
+}
 
-// NewProducer returns a sarama.SyncProducer.
-func NewProducer(brokers []string, maxMegabytes int) (sarama.SyncProducer, error) {
-	if maxMegabytes <= 0 {
-		return nil, fmt.Errorf("%w, maxMegabytes should be at least 1", ErrNotAllowed)
+func NewProducer(brokers ...string) (*Producer, error) {
+	cl, err := kgo.NewClient(
+		kgo.SeedBrokers(brokers...),
+	)
+	if err != nil {
+		return nil, err
 	}
-	if len(brokers) == 0 {
-		return nil, fmt.Errorf("%w, brokers count should be at least 1", ErrNotAllowed)
+
+	return &Producer{
+		client: cl,
+	}, nil
+}
+
+func (p *Producer) Produce(ctx context.Context, messages []Message, topic string) {
+	var records []*kgo.Record
+
+	for _, message := range messages {
+		records = append(records, &kgo.Record{Topic: topic, Value: message})
 	}
 
-	config := sarama.NewConfig()
-	config.Producer.RequiredAcks = sarama.WaitForAll
-	config.Producer.Return.Successes = true
-	config.Producer.Partitioner = sarama.NewRandomPartitioner
-	config.Producer.Idempotent = true
-	config.Producer.Compression = sarama.CompressionGZIP
-	config.Producer.MaxMessageBytes = maxMegabytes * 1000000
-	config.Producer.Retry.Max = 1024
-	config.Net.MaxOpenRequests = 1
-
-	return sarama.NewSyncProducer(brokers, config)
+	results := p.client.ProduceSync(ctx, records...)
+	for _, result := range results {
+		fmt.Println(result)
+	}
 }
