@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"context"
-	"time"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -19,6 +18,7 @@ func NewConsumer(groupName string, topics []string, brokers []string) (*Consumer
 		kgo.ConsumerGroup(groupName),
 		kgo.ConsumeTopics(topics...),
 		kgo.DisableAutoCommit(),
+		kgo.GroupProtocol("roundrobin"),
 	)
 	if err != nil {
 		return nil, err
@@ -35,36 +35,19 @@ func (c *Consumer) ConsumeBatch(ctx context.Context, batchSize int) ([]Message, 
 
 consume:
 	for {
-		timeout, cancel := context.WithTimeout(ctx, time.Second*20)
-		defer cancel()
+		fetches := c.client.PollFetches(ctx)
+		errs = fetches.Errors()
 
-		for {
-			fetches := c.client.PollFetches(timeout)
-			errs = fetches.Errors()
-
-			if timeout.Err() != nil {
-				cancel()
-				break consume
-			}
-
-			iter := fetches.RecordIter()
-			for !iter.Done() {
-				record := iter.Next()
-
-				c.client.CommitRecords(ctx, record)
-				messages = append(messages, record.Value)
-			}
+		iter := fetches.RecordIter()
+		for !iter.Done() {
+			record := iter.Next()
+			c.client.CommitRecords(ctx, record)
+			messages = append(messages, record.Value)
 
 			if len(messages) >= batchSize || len(errs) > 0 {
-				cancel()
 				break consume
 			}
 		}
-
-	}
-
-	if len(messages) == 0 {
-		goto consume
 	}
 
 	return messages, errs
