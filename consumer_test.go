@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"context"
-	"fmt"
 	"testing"
 )
 
@@ -34,7 +33,6 @@ func TestConsumeBatch(t *testing.T) {
 			defer producer.Close()
 			producer.Produce(context.Background(), test.messages, "kafka_do_test")
 
-			fmt.Println("produced")
 			consumer, err := NewConsumer("kafka_do", []string{"kafka_do_test"}, []string{"127.0.0.1:9092"})
 			if err != nil {
 				t.Fatal(err)
