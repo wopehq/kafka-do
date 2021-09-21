@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"time"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -35,7 +36,9 @@ func (c *Consumer) ConsumeBatch(ctx context.Context, batchSize int) ([]Message, 
 
 consume:
 	for {
-		fetches := c.client.PollFetches(ctx)
+		timeout, cancel := context.WithTimeout(ctx, time.Minute*1)
+		defer cancel()
+		fetches := c.client.PollFetches(timeout)
 		errs = fetches.Errors()
 
 		iter := fetches.RecordIter()
@@ -43,6 +46,10 @@ consume:
 			record := iter.Next()
 			c.client.CommitRecords(ctx, record)
 			messages = append(messages, record.Value)
+
+			if timeout.Err() != nil && len(messages) > 0 {
+				break consume
+			}
 
 			if len(messages) >= batchSize || len(errs) > 0 {
 				break consume
