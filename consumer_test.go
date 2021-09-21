@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestProduce(t *testing.T) {
+func TestConsumeBatch(t *testing.T) {
 	tests := []struct {
 		name     string
 		messages []Message
@@ -31,7 +31,6 @@ func TestProduce(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer producer.Close()
-
 			producer.Produce(context.Background(), test.messages, "kafka_do_test")
 
 			consumer, err := NewConsumer("kafka_do", []string{"kafka_do_test"}, []string{"127.0.0.1:9092"})
@@ -46,7 +45,7 @@ func TestProduce(t *testing.T) {
 			}
 
 			if len(messages) != len(test.messages) {
-				t.Errorf("Produce got %d, want %d", len(messages), len(test.messages))
+				t.Errorf("ConsumeBatch got %d, want %d", len(messages), len(test.messages))
 			}
 		})
 	}

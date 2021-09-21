@@ -1,13 +1,13 @@
-# KAFKA
+# REDPANDA
 
-clean-kafka:
-	docker-compose -f containers/dc.kafka.yml down --volume
+clean-redpanda:
+	docker-compose -f containers/dc.dev.yml down --volume
 
-run-kafka:
-	docker-compose -f containers/dc.kafka.yml up -d
+run-redpanda:
+	docker-compose -f containers/dc.dev.yml up -d
 
-logs-kafka:
-	docker-compose -f containers/dc.kafka.yml logs -f
+logs-redpanda:
+	docker-compose -f containers/dc.dev.yml logs -f
 
 # TEST
 
