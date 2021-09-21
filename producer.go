@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -24,15 +23,16 @@ func NewProducer(brokers ...string) (*Producer, error) {
 	}, nil
 }
 
-func (p *Producer) Produce(ctx context.Context, messages []Message, topic string) {
+func (p *Producer) Produce(ctx context.Context, messages []Message, topic string) kgo.ProduceResults {
 	var records []*kgo.Record
 
 	for _, message := range messages {
 		records = append(records, &kgo.Record{Topic: topic, Value: message})
 	}
 
-	results := p.client.ProduceSync(ctx, records...)
-	for _, result := range results {
-		fmt.Println(result)
-	}
+	return p.client.ProduceSync(ctx, records...)
+}
+
+func (p *Producer) Close() {
+	p.client.Close()
 }
