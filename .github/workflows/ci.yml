@@ -24,7 +24,7 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Start redpanda at localhost:9092.
-        run: make run-kafka
+        run: make run-redpanda
 
       - name: Wait for Redpanda.
         run: |
