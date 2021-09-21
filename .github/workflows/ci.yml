@@ -35,9 +35,7 @@ jobs:
           ./wait
 
       - name: Create a Topic
-        run: |
-          docker exec -it redpanda-1 \ 
-          rpk topic create messages
+        run: docker exec -it redpanda-1 rpk topic create messages
 
       - name: Test
         run: go test ./... -v -race -count=1 -timeout 6m -cover
