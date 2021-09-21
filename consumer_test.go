@@ -1,0 +1,54 @@
+package kafka
+
+import (
+	"context"
+	"fmt"
+	"testing"
+)
+
+func TestConsumeBatch(t *testing.T) {
+	tests := []struct {
+		name     string
+		messages []Message
+	}{
+		{
+			name: "should-got-message",
+			messages: []Message{
+				Message("message 1"),
+			},
+		},
+		{
+			name: "should-got-all-messages",
+			messages: []Message{
+				Message("message 1"), Message("message 2"), Message("message 3"), Message("message 4"), Message("message 5"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			producer, err := NewProducer("127.0.0.1:9092")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer producer.Close()
+			producer.Produce(context.Background(), test.messages, "kafka_do_test")
+
+			fmt.Println("produced")
+			consumer, err := NewConsumer("kafka_do", []string{"kafka_do_test"}, []string{"127.0.0.1:9092"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer consumer.Close()
+
+			messages, errs := consumer.ConsumeBatch(context.Background(), len(test.messages))
+			if len(errs) > 0 {
+				t.Fatal(errs)
+			}
+
+			if len(messages) != len(test.messages) {
+				t.Errorf("ConsumeBatch got %d, want %d", len(messages), len(test.messages))
+			}
+		})
+	}
+}
