@@ -33,6 +33,7 @@ func NewConsumer(groupName string, topics []string, brokers []string) (*Consumer
 func (c *Consumer) ConsumeBatch(ctx context.Context, batchSize int) ([]Message, []kgo.FetchError) {
 	var messages []Message
 	var errs []kgo.FetchError
+	var records []*kgo.Record
 
 consume:
 	for {
@@ -44,17 +45,21 @@ consume:
 		iter := fetches.RecordIter()
 		for !iter.Done() {
 			record := iter.Next()
-			c.client.CommitRecords(ctx, record)
-			messages = append(messages, record.Value)
+			records = append(records, record)
 
-			if timeout.Err() != nil && len(messages) > 0 {
+			if timeout.Err() != nil && len(records) > 0 {
 				break consume
 			}
 
-			if len(messages) >= batchSize || len(errs) > 0 {
+			if len(records) >= batchSize || len(errs) > 0 {
 				break consume
 			}
 		}
+	}
+	c.client.CommitRecords(ctx, records...)
+
+	for _, record := range records {
+		messages = append(messages, record.Value)
 	}
 
 	return messages, errs
