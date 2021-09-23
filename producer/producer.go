@@ -1,8 +1,9 @@
-package kafka
+package producer
 
 import (
 	"context"
 
+	"github.com/teamseodo/kafka-do/model"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -10,7 +11,7 @@ type Producer struct {
 	client *kgo.Client
 }
 
-func NewProducer(brokers ...string) (*Producer, error) {
+func New(brokers ...string) (*Producer, error) {
 	cl, err := kgo.NewClient(
 		kgo.SeedBrokers(brokers...),
 	)
@@ -23,7 +24,7 @@ func NewProducer(brokers ...string) (*Producer, error) {
 	}, nil
 }
 
-func (p *Producer) Produce(ctx context.Context, messages []Message, topic string) kgo.ProduceResults {
+func (p *Producer) Produce(ctx context.Context, messages []model.Message, topic string) kgo.ProduceResults {
 	var records []*kgo.Record
 
 	for _, message := range messages {

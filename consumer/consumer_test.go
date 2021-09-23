@@ -1,39 +1,42 @@
-package kafka
+package consumer
 
 import (
 	"context"
 	"testing"
+
+	"github.com/teamseodo/kafka-do/model"
+	"github.com/teamseodo/kafka-do/producer"
 )
 
 func TestConsumeBatch(t *testing.T) {
 	tests := []struct {
 		name     string
-		messages []Message
+		messages []model.Message
 	}{
 		{
 			name: "should-got-message",
-			messages: []Message{
-				Message("message 1"),
+			messages: []model.Message{
+				model.Message("message 1"),
 			},
 		},
 		{
 			name: "should-got-all-messages",
-			messages: []Message{
-				Message("message 1"), Message("message 2"), Message("message 3"), Message("message 4"), Message("message 5"),
+			messages: []model.Message{
+				model.Message("message 1"), model.Message("message 2"), model.Message("message 3"), model.Message("message 4"), model.Message("message 5"),
 			},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			producer, err := NewProducer("127.0.0.1:9092")
+			producer, err := producer.New("127.0.0.1:9092")
 			if err != nil {
 				t.Fatal(err)
 			}
 			defer producer.Close()
 			producer.Produce(context.Background(), test.messages, "kafka_do_test")
 
-			consumer, err := NewConsumer("kafka_do", []string{"kafka_do_test"}, []string{"127.0.0.1:9092"}, false)
+			consumer, err := New("kafka_do", []string{"kafka_do_test"}, []string{"127.0.0.1:9092"}, false)
 			if err != nil {
 				t.Fatal(err)
 			}
