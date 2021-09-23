@@ -30,34 +30,30 @@ func NewConsumer(groupName string, topics []string, brokers []string) (*Consumer
 	}, nil
 }
 
-func (c *Consumer) ConsumeBatch(ctx context.Context, batchSize int) ([]Message, []kgo.FetchError) {
+func (c *Consumer) ConsumeBatch(ctx context.Context, batchSize int) []Message {
 	var messages []Message
-	var errs []kgo.FetchError
 
-consume:
-	for {
+	for batchSize > 0 {
 		timeout, cancel := context.WithTimeout(ctx, time.Minute*1)
 		defer cancel()
-		fetches := c.client.PollFetches(timeout)
-		errs = fetches.Errors()
+
+		fetches := c.client.PollRecords(timeout, batchSize)
 
 		iter := fetches.RecordIter()
 		for !iter.Done() {
 			record := iter.Next()
-			c.client.CommitRecords(ctx, record)
 			messages = append(messages, record.Value)
+		}
 
-			if timeout.Err() != nil && len(messages) > 0 {
-				break consume
-			}
+		batchSize = batchSize - len(messages)
 
-			if len(messages) >= batchSize || len(errs) > 0 {
-				break consume
-			}
+		if ctx.Err() != nil {
+			break
 		}
 	}
+	c.client.CommitUncommittedOffsets(ctx)
 
-	return messages, errs
+	return messages
 }
 
 func (c *Consumer) Close() {
