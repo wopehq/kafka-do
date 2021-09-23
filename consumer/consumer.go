@@ -1,26 +1,26 @@
-package kafka
+package consumer
 
 import (
 	"context"
 	"os"
 	"time"
 
+	"github.com/teamseodo/kafka-do/constants"
+	"github.com/teamseodo/kafka-do/model"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
-
-type Message []byte
 
 type Consumer struct {
 	client *kgo.Client
 }
 
-func NewConsumer(groupName string, topics []string, brokers []string, logger bool) (*Consumer, error) {
+func New(groupName string, topics []string, brokers []string, logger bool) (*Consumer, error) {
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(brokers...),
 		kgo.ConsumerGroup(groupName),
 		kgo.ConsumeTopics(topics...),
 		kgo.DisableAutoCommit(),
-		kgo.GroupProtocol("roundrobin"),
+		kgo.GroupProtocol(constants.GroupProtocol),
 	}
 
 	if logger {
@@ -37,8 +37,8 @@ func NewConsumer(groupName string, topics []string, brokers []string, logger boo
 	}, nil
 }
 
-func (c *Consumer) ConsumeBatch(ctx context.Context, batchSize int) []Message {
-	var messages []Message
+func (c *Consumer) ConsumeBatch(ctx context.Context, batchSize int) []model.Message {
+	var messages []model.Message
 
 	for batchSize > 0 {
 		timeout, cancel := context.WithTimeout(ctx, time.Minute*1)
