@@ -39,10 +39,7 @@ func TestConsumeBatch(t *testing.T) {
 			}
 			defer consumer.Close()
 
-			messages, errs := consumer.ConsumeBatch(context.Background(), len(test.messages))
-			if len(errs) > 0 {
-				t.Fatal(errs)
-			}
+			messages := consumer.ConsumeBatch(context.Background(), len(test.messages))
 
 			if len(messages) != len(test.messages) {
 				t.Errorf("ConsumeBatch got %d, want %d", len(messages), len(test.messages))
