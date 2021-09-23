@@ -34,7 +34,7 @@ func TestProduce(t *testing.T) {
 
 			producer.Produce(context.Background(), test.messages, "kafka_do_test")
 
-			consumer, err := NewConsumer("kafka_do", []string{"kafka_do_test"}, []string{"127.0.0.1:9092"})
+			consumer, err := NewConsumer("kafka_do", []string{"kafka_do_test"}, []string{"127.0.0.1:9092"}, false)
 			if err != nil {
 				t.Fatal(err)
 			}

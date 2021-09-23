@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -13,14 +14,20 @@ type Consumer struct {
 	client *kgo.Client
 }
 
-func NewConsumer(groupName string, topics []string, brokers []string) (*Consumer, error) {
-	cl, err := kgo.NewClient(
+func NewConsumer(groupName string, topics []string, brokers []string, logger bool) (*Consumer, error) {
+	opts := []kgo.Opt{
 		kgo.SeedBrokers(brokers...),
 		kgo.ConsumerGroup(groupName),
 		kgo.ConsumeTopics(topics...),
 		kgo.DisableAutoCommit(),
 		kgo.GroupProtocol("roundrobin"),
-	)
+	}
+
+	if logger {
+		opts = append(opts, kgo.WithLogger(kgo.BasicLogger(os.Stderr, kgo.LogLevelInfo, nil)))
+	}
+
+	cl, err := kgo.NewClient(opts...)
 	if err != nil {
 		return nil, err
 	}
