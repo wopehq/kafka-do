@@ -21,6 +21,7 @@ func NewConsumer(groupName string, topics []string, brokers []string, logger boo
 		kgo.ConsumeTopics(topics...),
 		kgo.DisableAutoCommit(),
 		kgo.GroupProtocol("roundrobin"),
+		kgo.Balancers(kgo.RoundRobinBalancer()),
 	}
 
 	if logger {
