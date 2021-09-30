@@ -10,9 +10,10 @@ type Producer struct {
 	client *kgo.Client
 }
 
-func NewProducer(brokers ...string) (*Producer, error) {
+func NewProducer(maxBytes int32, brokers ...string) (*Producer, error) {
 	cl, err := kgo.NewClient(
 		kgo.SeedBrokers(brokers...),
+		kgo.ProducerBatchMaxBytes(maxBytes),
 	)
 	if err != nil {
 		return nil, err
