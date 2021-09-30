@@ -26,7 +26,7 @@ func TestProduce(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			producer, err := NewProducer("127.0.0.1:9092")
+			producer, err := NewProducer(2<<20, "127.0.0.1:9092")
 			if err != nil {
 				t.Fatal(err)
 			}
