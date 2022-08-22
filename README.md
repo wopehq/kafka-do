@@ -8,7 +8,7 @@
 	<strong>kafka-do</strong>
 </div>
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/teamseodo/kafka-do.svg)](https://pkg.go.dev/github.com/teamseodo/kafka-do)
+[![Go Reference](https://pkg.go.dev/badge/github.com/wopehq/kafka-do.svg)](https://pkg.go.dev/github.com/wopehq/kafka-do)
 
 ## What
 
@@ -27,7 +27,7 @@ Produce messages as a batch to a topic.
 
 ## Example
 
-For e2e example, check [**here**](https://github.com/teamseodo/kafka-do-example).
+For e2e example, check [**here**](https://github.com/wopehq/kafka-do-example).
 
 ```go
 	producer, err := kafka.NewProducer("127.0.0.1:9092")
