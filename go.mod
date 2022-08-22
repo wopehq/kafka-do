@@ -1,4 +1,4 @@
-module github.com/teamseodo/kafka-do
+module github.com/wopehq/kafka-do
 
 go 1.16
 
